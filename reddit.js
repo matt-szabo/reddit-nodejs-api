@@ -1,3 +1,5 @@
+"use strict";
+
 var bcrypt = require('bcrypt-as-promised');
 var HASH_ROUNDS = 10;
 
@@ -35,11 +37,32 @@ class RedditAPI {
         return this.conn.query(
             `
             INSERT INTO posts (userId, title, url, createdAt, updatedAt)
-            VALUES (?, ?, ?, NOW(). NOW())`,
+            VALUES (?, ?, ?, NOW(), NOW())`,
             [post.userId, post.title, post.url]
         )
             .then(result => {
                 return result.insertId;
+            });
+    }
+    
+        createSubreddit(subreddit) {
+        return this.conn.query(
+            `
+            INSERT INTO subreddits (name,description, createdAt, updatedAt)
+            VALUES (?, ?,NOW(), NOW())`,
+            [subreddit.user, subreddit.description]
+        )
+            .then(result => {
+                return result.insertId;
+            })
+            .catch(error => {
+                // Special error handling for duplicate entry
+                if (error.code === 'ER_DUP_ENTRY') {
+                    throw new Error('A subreddit with this name already exists');
+                }
+                else {
+                    throw error;
+                }
             });
     }
 
@@ -55,8 +78,8 @@ class RedditAPI {
          */
         return this.conn.query(
             `
-            SELECT id, title, url, userId, createdAt, updatedAt
-            FROM posts
+            SELECT posts.id, posts.title, posts.url, posts.createdAt, posts.updatedAt, posts.userId, users.username, users.createdAt as userCreated, users.updatedAt as userUpdated
+            FROM posts JOIN users ON users.id = posts.userId
             ORDER BY createdAt DESC
             LIMIT 25`
         );
