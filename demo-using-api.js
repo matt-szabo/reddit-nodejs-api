@@ -47,15 +47,18 @@ var myReddit = new RedditAPI(connection);
 //                 }
 
 //             //prettyObj.reverse();
-//                 console.log(prettySub["id"]);
+//                 console.log(prettySub["id"]+" " +prettySub["updatedAt"]);
 //         });
     
 //         return formattedArray;
         
-//     }).catch(error => {
+//     }).then(function(){
+        // connection.end();
+        // })
+        // .catch(error => {
 //       console.log(error.stack);
 //      });
-// // 
+// 
 // myReddit.createUser({
 //     username: 500*Math.random(),
 //     password: 'abc123'
@@ -96,32 +99,58 @@ var myReddit = new RedditAPI(connection);
     //         });
     
 myReddit.getAllPosts().then(function(data){
-    //data.forEach(postlist => {
-        //console.log(postlist);
+
         var formattedArray = data.map(post =>{
             var prettyObj = {
                 id: post.id,
-                title:post.title,
-                url:post.url,
-                createdAt:post.createdAt,
-                updatedAt:post.updatedAt,
-                user:{
-                    user_id: post.userId,
-                    username: post.username,
-                    createdAt:post.userCreated,
-                    updatedAt:post.userUpdated
-                    
+                voteScore: post.voteScore,
+                title: post.title,
+                url: post.url,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
+                user:
+                {
+                user_id: post.userId,
+                username: post.username,
+                createdAt: post.userCreated,
+                updatedAt: post.userUpdated,
+                },
+                subreddit:
+                {
+                name: post.subredditName,
+                description: post.subredditDesc,
+                subcreate: post.subCreated,
+                subupdate: post.subUpdated
                 }
+                
             };
+             console.log(prettyObj);
+               
+             return formattedArray;
+             
             //prettyObj.reverse();
-                console.log(prettyObj["id"]);
-        });
-    
-        return formattedArray;
-        
-    }).catch(error => {
+            // console.log(prettyObj["user.user_id"]);
+            //console.log(prettyOb[subreddit]);
+               
+      });
+})
+.then(function(){
+connection.end();
+     })
+    .catch(error => {
       console.log(error.stack);
      });
+
+// myReddit.createVote({
+//     userId: '8',
+//     postId: '5',
+//     voteDirection: 1
+// }).then(function(){
+//     connection.end();
+//     })
+//     .catch(error => {
+//         console.log(error.stack);
+//     });
     
 
 

@@ -85,12 +85,18 @@ class RedditAPI {
         lines without having to manually split the string line by line.
          */
         return this.conn.query(
-            `
-            SELECT posts.id, posts.title, posts.url, posts.createdAt, posts.updatedAt, posts.userId, users.username, users.createdAt as userCreated, users.updatedAt as userUpdated
-            FROM posts JOIN users ON users.id = posts.userId
-            ORDER BY createdAt DESC
-            LIMIT 25`
-        );
+            
+           
+        //     SELECT posts.id, posts.title, posts.url, posts.createdAt, posts.updatedAt, posts.userId, users.username, users.createdAt as userCreated, users.updatedAt as userUpdated,subreddits.name as subredditName, subreddits.description as subredditDesc, subreddits.createdAt as subCreated, subreddits.updatedAt as subUpdated
+        //     FROM posts
+        //     LEFT JOIN users ON posts.userId = users.id
+        //     LEFT JOIN subreddits ON posts.subredditId = subreddits.id;
+            
+        
+        
+       `SELECT posts.id, SUM(votes.voteDirection) as voteScore,posts.title, posts.url,  posts.createdAt, posts.updatedAt,  posts.userId,  users.username,  users.createdAt as userCreated,  users.updatedAt as userUpdated, subreddits.name as subredditName, subreddits.description as subredditDesc, subreddits.createdAt as subCreated, subreddits.updatedAt as subUpdated, votes.voteDirection as voteDirection  FROM posts LEFT JOIN users ON posts.userId = users.id LEFT JOIN subreddits ON posts.subredditId = subreddits.id LEFT JOIN votes ON posts.id = votes.postId GROUP BY posts.id ORDER BY voteScore DESC;`
+    );
+        
     }
     
     getAllSubreddits() {
@@ -103,6 +109,16 @@ class RedditAPI {
         );
     }
     
+    createVote(vote) {
+        return this.conn.query(
+            
+            `INSERT INTO votes SET postId=?, userId=?, voteDirection=? ON DUPLICATE KEY UPDATE voteDirection=?;`,
+            [vote.postId, vote.userId, vote.voteDirection, vote.voteDirection]
+        )
+            .then(result => {
+                return result.insertId;
+            });
+    
 }
-
+}
 module.exports = RedditAPI;
