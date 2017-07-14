@@ -31,7 +31,18 @@ createdAt DATETIME NOT NULL,
 updatedAt DATETIME NOT NULL 
 ); 
 
-ALTER TABLE posts ADD COLUMN subredditId INT, 
+ALTER TABLE posts ADD COLUMN subredditId INT AFTER userId, 
 ADD FOREIGN KEY sub_fk(subredditId) REFERENCES subreddits (id);
 
 
+CREATE TABLE votes (
+  userId INT,
+  postId INT,
+  voteDirection TINYINT,
+  createdAt DATETIME NOT NULL,
+  updatedAt DATETIME NOT NULL,
+  PRIMARY KEY (userId, postId),
+  KEY userId (userId),
+  KEY postId (postId),
+  FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE,
+FOREIGN KEY (postId) REFERENCES posts (id) ON DELETE CASCADE);
