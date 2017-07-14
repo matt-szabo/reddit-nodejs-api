@@ -17,7 +17,8 @@ class RedditAPI {
          */
         return bcrypt.hash(user.password, HASH_ROUNDS)
             .then(hashedPassword => {
-                return this.conn.query('INSERT INTO users (username,password, createdAt, updatedAt) VALUES (?, ?, NOW(), NOW())', [user.username, hashedPassword]);
+                return this.conn.query('INSERT INTO users (username,password, createdAt, updatedAt) VALUES (?, ?, NOW(), NOW())', 
+                [user.username, hashedPassword]);
             })
             .then(result => {
                 return result.insertId;
@@ -34,23 +35,30 @@ class RedditAPI {
     }
 
     createPost(post) {
+        
+        if(!post.subredditId){
+            throw new Error('Missing subredditId');
+            
+            
+        }
+        else{
         return this.conn.query(
             `
-            INSERT INTO posts (userId, title, url, createdAt, updatedAt)
-            VALUES (?, ?, ?, NOW(), NOW())`,
-            [post.userId, post.title, post.url]
+            INSERT INTO posts (userId, title, url, subredditId, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?,NOW(), NOW())`,
+            [post.userId, post.title, post.url,post.subredditId]
         )
             .then(result => {
                 return result.insertId;
             });
     }
-    
+    }
         createSubreddit(subreddit) {
         return this.conn.query(
             `
             INSERT INTO subreddits (name,description, createdAt, updatedAt)
             VALUES (?, ?,NOW(), NOW())`,
-            [subreddit.user, subreddit.description]
+            [subreddit.name, subreddit.description]
         )
             .then(result => {
                 return result.insertId;
@@ -84,6 +92,17 @@ class RedditAPI {
             LIMIT 25`
         );
     }
+    
+    getAllSubreddits() {
+       
+        return this.conn.query(
+            `
+            SELECT subreddits.id, subreddits.name, subreddits.description, subreddits.createdAt, subreddits.updatedAt
+            FROM subreddits
+            ORDER BY createdAt DESC`
+        );
+    }
+    
 }
 
 module.exports = RedditAPI;
